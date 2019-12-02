@@ -16,7 +16,8 @@ func totalFuel(forMass mass: Int) -> Int {
 }
 
 func day1() throws {
-    let data = try parseIntegersFromFile(forDay: 1)
+    // assumes input file is well-formed.
+    let data = try readLines(forDay: 1).map { Int($0)! }
 
     let part1 = data.map(fuel).reduce(0, +)
     print("Answer to part 1: \(part1)")

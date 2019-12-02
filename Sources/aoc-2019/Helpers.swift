@@ -2,16 +2,16 @@ import Foundation
 
 /// Helper functions for use across multiple days.
 
-/// Given a day, parses the integers from the file corresponding to that day.
-func parseIntegersFromFile(forDay day: Int) throws -> [Int] {
+/// Reads the lines from a file corresponding to a given day.
+func readLines(forDay day: Int) throws -> [String.SubSequence] {
     let path = URL(fileURLWithPath: "./Inputs/\(day)")
     return try String(contentsOf: path, encoding: .utf8)
                 .split(separator: "\n")
-                .map { Int($0)! } // assumes all input files are well-formed.
 }
 
 let days: [Int: () throws -> Void] = [
-    1: day1
+    1: day1,
+    2: day2
 ]
 
 /// Runs the solution for the provided day, if it exists.
