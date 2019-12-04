@@ -1,11 +1,11 @@
 /// The elements must be Comparable so we can do equality checks.
 extension Array where Element: Comparable {
     /// Returns whether this array is already in sorted order.
-    var isSorted: Bool { return self.sorted() == self }
+    var isSorted: Bool { self.sorted() == self }
 
     /// Returns whether the array contains two adjacent identical values.
     var containsPair: Bool {
-        return (0..<self.count - 1).contains { idx in
+        (0..<self.count - 1).contains { idx in
             self[idx] == self[idx + 1]
         }
     }
@@ -16,7 +16,7 @@ extension Array where Element: Comparable {
         // Iterate from the start to the second-to-last index.
         // We are trying to find a value idx where Array[idx] == Array[idx + 1], and Array[idx - 1] and Array[idx + 2]
         // either don't exist or do not equal Array[idx].
-        return (0..<self.count - 1).contains { idx in
+        (0..<self.count - 1).contains { idx in
             let curr = self[idx]
 
             // Check whether the current element forms a pair with the next element.
