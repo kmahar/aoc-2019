@@ -11,7 +11,8 @@ func readLines(forDay day: Int) throws -> [String.SubSequence] {
 
 let days: [Int: () throws -> Void] = [
     1: day1,
-    2: day2
+    2: day2,
+    3: day3
 ]
 
 /// Runs the solution for the provided day, if it exists.
