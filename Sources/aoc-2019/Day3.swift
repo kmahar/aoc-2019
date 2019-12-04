@@ -86,6 +86,6 @@ func day3() throws {
         steps[intersection] = visitedPoints.map { $0.firstIndex(of: intersection)! + 1 }.reduce(0, +)
     }
     // Find the intersection with the lowest number of steps.
-    let fewestSteps = intersectionSteps.min { $0.value < $1.value }
+    let fewestSteps = steps.min { $0.value < $1.value }
     print("Part 2 answer: \(fewestSteps?.value)")
 }
