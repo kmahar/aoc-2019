@@ -42,12 +42,15 @@ extension Array where Element: Comparable {
 }
 
 func day4() throws {
-    // sorted indicates digits are in increasing order.
+    // For each value in the specified range, create an [Character] containing the digits.
+    // Filter out all of the arrays that are not sorted. Sorted indicates the digits are in increasing order.
     let sortedPasswords = (109165...576723).map { Array(String($0)) }.filter { $0.isSorted }
 
+    // Filter out all passwords that contain pairs and count them.
     let containsAdjacentPair = sortedPasswords.filter { $0.containsPair }
     print("Part 1: \(containsAdjacentPair.count)")
 
-    let containsIsolatedPair = sortedPasswords.filter { $0.containsIsolatedPair }
+    // Further filter to only include passwords with isolated pairs.
+    let containsIsolatedPair = containsAdjacentPair.filter { $0.containsIsolatedPair }
     print("Part 2: \(containsIsolatedPair.count)")
 }
