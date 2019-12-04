@@ -83,6 +83,7 @@ func day3() throws {
     // Sum the value across all wires to get the total number of steps to reach the intersection.
     var steps = [Point: Int]()
     intersections.forEach { intersection in
+        // + 1 is to account for the origin not being at the start of each list.
         steps[intersection] = visitedPoints.map { $0.firstIndex(of: intersection)! + 1 }.reduce(0, +)
     }
     // Find the intersection with the lowest number of steps.
