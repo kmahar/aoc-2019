@@ -16,30 +16,28 @@ extension Array where Element: Comparable {
         // Iterate from the start to the second-to-last index.
         // We are trying to find a value idx where Array[idx] == Array[idx + 1], and Array[idx - 1] and Array[idx + 2]
         // either don't exist or do not equal Array[idx].
-        for idx in 0..<self.count - 1 {
+        return (0..<self.count - 1).contains { idx in
             let curr = self[idx]
 
             // Check whether the current element forms a pair with the next element.
             if curr != self[idx + 1] {
-                continue
+                return false
             }
 
             // Make sure the current element does *not* match the previous element. If it does we have 3+ in a row.
             // If idx == 0 then we are at the start and there is no previous element.
             if idx > 0 && curr == self[idx - 1] {
-                continue
+                return false
             }
 
             // Make sure this pair is not followed by a third matching element. If idx > self.count - 2 then there is
             // no following element.
             if idx < self.count - 2 && curr == self[idx + 2] {
-                continue
+                return false
             }
 
             return true
         }
-
-        return false
     }
 }
 
