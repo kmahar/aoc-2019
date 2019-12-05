@@ -77,7 +77,7 @@ func day3() throws {
 
     // Find which intersection is closest to the origin.
     let closestToOrigin = intersections.min { $0.distFromOrigin < $1.distFromOrigin }
-    print("Part 1 answer: \(closestToOrigin?.distFromOrigin)")
+    print("Part 1 answer: \(closestToOrigin?.distFromOrigin ?? -1)")
 
     // For each intersection, find the first index of that intersection in the path taken by each wire.
     // Sum the value across all wires to get the total number of steps to reach the intersection.
@@ -88,5 +88,5 @@ func day3() throws {
     }
     // Find the intersection with the lowest number of steps.
     let fewestSteps = steps.min { $0.value < $1.value }
-    print("Part 2 answer: \(fewestSteps?.value)")
+    print("Part 2 answer: \(fewestSteps?.value ?? -1)")
 }
