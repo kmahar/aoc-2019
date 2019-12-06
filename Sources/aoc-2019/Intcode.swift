@@ -18,7 +18,7 @@ enum Mode: Int {
 
 }
 
-// Parses the requested number of parameter modes from the first value in an instruction.
+/// Parses the requested number of parameter modes from the first value in an instruction.
 func parseModes(value: Int, count: Int) -> [Mode] {
     // remove the trailing two digits, which are the opcode
     var modeData = value / 100
@@ -32,19 +32,18 @@ func parseModes(value: Int, count: Int) -> [Mode] {
     return modes
 }
 
-func getParam(from data: [Int], at index: Int, mode: Mode) -> Int {
-    switch mode {
-    case .position:
-        return data[data[index]]
-    case .immediate:
-        return data[index]
-    }
-}
-
+/// Given data, an instruction's start index, and a count of parameters, returns
+/// the instruction's parameters.
 func getParams(from data: [Int], startIndex: Int, count: Int) -> [Int] {
     let modes = parseModes(value: data[startIndex], count: count)
     return (0..<count).map { i in
-        getParam(from: data, at: startIndex + 1 + i, mode: modes[i])
+        let idx = startIndex + 1 + i
+        switch modes[i] {
+        case .position:
+            return data[data[idx]]
+        case .immediate:
+            return data[idx]
+        }
     }
 }
 
