@@ -76,9 +76,13 @@ func readInstruction(from data: [Int], startIndex: Int) -> Instruction {
     }
 }
 
-/// Given a program described by an `[Int]`, runs the program and returns the final value contained at address 0.
-func compute(program: [Int]) -> Int {
+/// Given a program described by an `[Int]`, and an array containing inputs to the program, runs the program and
+/// returns a tuple containing the final value contained at address 0 as well as an array containing all outputs of the
+/// program.
+func compute(program: [Int], inputs: [Int] = []) -> (Int, [Int]) {
     var mem = program
+    var inputs = inputs
+    var outputs = [Int]()
     var iP = 0
     // iterate through the instructions.
     while iP < mem.count {
@@ -94,10 +98,9 @@ func compute(program: [Int]) -> Int {
         case .lessThan:
             mem[params[2]] = params[0] < params[1] ? 1 : 0
         case .input:
-            print("Provide an input: ", terminator: "")
-            mem[params[0]] = Int(readLine()!)!
+            mem[params[0]] = inputs.removeFirst()
         case .output:
-            print("Output: \(params[0])")
+            outputs.append(params[0])
         case .jumpIfTrue:
             if params[0] != 0 {
                 iP = params[1]
@@ -109,10 +112,10 @@ func compute(program: [Int]) -> Int {
                 continue // continue to avoid incrementing iP below
             }
         case .halt:
-            return mem[0]
+            return (mem[0], outputs)
         }
         iP += instruction.length
     }
     // we should never get here assuming the program eventually contains a `halt` opcode.
-    return mem[0]
+    return (mem[0], outputs)
 }

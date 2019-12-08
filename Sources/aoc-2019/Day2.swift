@@ -13,7 +13,7 @@ func day2() throws {
             var testProgram = program
             testProgram[1] = noun
             testProgram[2] = verb
-            if compute(program: testProgram) == target {
+            if compute(program: testProgram).0 == target {
                 print("Part 2: \(100 * noun + verb)")
                 return
             }
