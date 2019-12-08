@@ -14,7 +14,8 @@ let days: [Int: () throws -> Void] = [
     2: day2,
     3: day3,
     4: day4,
-    5: day5
+    5: day5,
+    6: day6
 ]
 
 /// Runs the solution for the provided day, if it exists.
