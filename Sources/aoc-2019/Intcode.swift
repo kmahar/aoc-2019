@@ -18,35 +18,7 @@ enum Mode: Int {
 
 }
 
-/// Parses the requested number of parameter modes from the first value in an instruction.
-func parseModes(value: Int, count: Int) -> [Mode] {
-    // remove the trailing two digits, which are the opcode
-    var modeData = value / 100
-    var modes = [Mode]()
-    for _ in 0..<count {
-        let lastDigit = modeData % 10
-        let mode = Mode(rawValue: lastDigit)!
-        modes.append(mode)
-        modeData /= 10
-    }
-    return modes
-}
-
-/// Given data, an instruction's start index, and a count of parameters, returns
-/// the instruction's parameters.
-func getParams(from data: [Int], startIndex: Int, count: Int) -> [Int] {
-    let modes = parseModes(value: data[startIndex], count: count)
-    return (0..<count).map { i in
-        let idx = startIndex + 1 + i
-        switch modes[i] {
-        case .position:
-            return data[data[idx]]
-        case .immediate:
-            return data[idx]
-        }
-    }
-}
-
+/// An instruction in an Intcode computer.
 struct Instruction {
     let opcode: Opcode
     let parameters: [Int]
@@ -54,68 +26,128 @@ struct Instruction {
     var length: Int { return parameters.count + 1 }
 }
 
-func readInstruction(from data: [Int], startIndex: Int) -> Instruction {
-    let first = data[startIndex]
-    // assume valid opcode. % 100 to get last two digits.
-    let opcode = Opcode(rawValue: first % 100)!
+/// An Intcode computer.
+struct Computer {
+    /// The program this computer should run.
+    var program: [Int]
+    /// Stores any inputs that should be provided to the program.
+    var inputs: [Int]
+    /// Stores outputs that the program produces while running.
+    var outputs: [Int] = []
+    /// The instruction pointer.
+    var iP: Int = 0
+    /// Indicates whether the program has halted.
+    var halted = false
 
-    switch opcode {
-    case .add, .multiply, .equals, .lessThan:
-        let params = getParams(from: data, startIndex: startIndex, count: 2)
-        return Instruction(opcode: opcode, parameters: params + [data[startIndex + 3]])
-    case .jumpIfTrue, .jumpIfFalse:
-        let params = getParams(from: data, startIndex: startIndex, count: 2)
-        return Instruction(opcode: opcode, parameters: params)
-    case .input:
-        return Instruction(opcode: opcode, parameters: [data[startIndex + 1]])
-    case .output:
-        let params = getParams(from: data, startIndex: startIndex, count: 1)
-        return Instruction(opcode: opcode, parameters: params)
-    case .halt:
-        return Instruction(opcode: opcode, parameters: [])
+    /// Initializes a new Computer with a program to run and an optionally provided array of inputs.
+    init(program: [Int], inputs: [Int] = []) {
+        self.program = program
+        self.inputs = inputs
     }
-}
 
-/// Given a program described by an `[Int]`, and an array containing inputs to the program, runs the program and
-/// returns a tuple containing the final value contained at address 0 as well as an array containing all outputs of the
-/// program.
-func compute(program: [Int], inputs: [Int] = []) -> (Int, [Int]) {
-    var mem = program
-    var inputs = inputs
-    var outputs = [Int]()
-    var iP = 0
-    // iterate through the instructions.
-    while iP < mem.count {
-        let instruction = readInstruction(from: mem, startIndex: iP)
+    /// Takes an output of the program in FIFO order. Assumes an output is available.
+    mutating func takeOutput() -> Int {
+        return self.outputs.removeFirst()
+    }
+
+    /// Reads parameters for an instruction beginning at the instruction pointer's current location.
+    func readParams(count: Int) -> [Int] {
+        // remove the trailing two digits, which are the opcode
+        var modeData = self.program[iP] / 100
+        var modes = [Mode]()
+        for _ in 0..<count {
+            let lastDigit = modeData % 10
+            let mode = Mode(rawValue: lastDigit)!
+            modes.append(mode)
+            modeData /= 10
+        }
+
+        return (0..<count).map { i in
+            let idx = self.iP + 1 + i
+            switch modes[i] {
+            case .position:
+                return self.program[program[idx]]
+            case .immediate:
+                return self.program[idx]
+            }
+        }
+    }
+
+    /// Reads the next instruction at the current address of the instruction pointer.
+    func readNextInstruction() -> Instruction {
+        let first = self.program[iP]
+        // assume valid opcode. % 100 to get last two digits.
+        let opcode = Opcode(rawValue: first % 100)!
+
+        switch opcode {
+        case .add, .multiply, .equals, .lessThan:
+            let params = self.readParams(count: 2)
+            return Instruction(opcode: opcode, parameters: params + [self.program[self.iP + 3]])
+        case .jumpIfTrue, .jumpIfFalse:
+            let params = self.readParams(count: 2)
+            return Instruction(opcode: opcode, parameters: params)
+        case .input:
+            return Instruction(opcode: opcode, parameters: [self.program[self.iP + 1]])
+        case .output:
+            let params = self.readParams(count: 1)
+            return Instruction(opcode: opcode, parameters: params)
+        case .halt:
+            return Instruction(opcode: opcode, parameters: [])
+        }
+    }
+
+    /// Executes the next instruction in the program. Has no effect if the program has already halted or if the
+    /// instruction pointer reaches the end of the program.
+    mutating func step() {
+        guard !self.halted && self.iP < program.count else {
+            return
+        }
+        let instruction = self.readNextInstruction()
         let params = instruction.parameters
         switch instruction.opcode {
         case .add:
-            mem[params[2]] = params[0] + params[1]
+            self.program[params[2]] = params[0] + params[1]
         case .multiply:
-            mem[params[2]] = params[0] * params[1]
+            self.program[params[2]] = params[0] * params[1]
         case .equals:
-            mem[params[2]] = params[0] == params[1] ? 1 : 0
+            self.program[params[2]] = params[0] == params[1] ? 1 : 0
         case .lessThan:
-            mem[params[2]] = params[0] < params[1] ? 1 : 0
+            self.program[params[2]] = params[0] < params[1] ? 1 : 0
         case .input:
-            mem[params[0]] = inputs.removeFirst()
+            self.program[params[0]] = self.inputs.removeFirst()
         case .output:
-            outputs.append(params[0])
+            self.outputs.append(params[0])
         case .jumpIfTrue:
             if params[0] != 0 {
-                iP = params[1]
-                continue // continue to avoid incrementing iP below
+                self.iP = params[1]
+                return // return to avoid incrementing iP below
             }
         case .jumpIfFalse:
             if params[0] == 0 {
-                iP = params[1]
-                continue // continue to avoid incrementing iP below
+                self.iP = params[1]
+                return // return to avoid incrementing iP below
             }
         case .halt:
-            return (mem[0], outputs)
+            self.halted = true
+            return
         }
-        iP += instruction.length
+        self.iP += instruction.length
     }
-    // we should never get here assuming the program eventually contains a `halt` opcode.
-    return (mem[0], outputs)
+
+    /// Runs the program until it next produces output or until the program halts. If an output is produced, returns
+    /// the output. If the program halts, returns nil.
+    mutating func runProgramUntilNextOutput() -> Int? {
+        while self.iP < self.program.count && !self.halted && self.outputs.count == 0 {
+            self.step()
+        }
+        return self.outputs.count > 0 ? self.takeOutput() : nil
+    }
+
+    /// Runs the program until it halts.
+    mutating func runProgramUntilComplete() {
+        // iterate through the instructions.
+        while self.iP < self.program.count && !self.halted {
+            self.step()
+        }
+    }
 }

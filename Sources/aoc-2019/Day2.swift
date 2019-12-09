@@ -4,7 +4,9 @@ func day2() throws {
     var part1Program = program
     part1Program[1] = 12
     part1Program[2] = 2
-    print("Part 1: \(compute(program: part1Program))")
+    var computer = Computer(program: part1Program)
+    computer.runProgramUntilComplete()
+    print("Part 1: \(computer.program[0])")
 
     let target = 19690720
 
@@ -13,7 +15,9 @@ func day2() throws {
             var testProgram = program
             testProgram[1] = noun
             testProgram[2] = verb
-            if compute(program: testProgram).0 == target {
+            var computer = Computer(program: testProgram)
+            computer.runProgramUntilComplete()
+            if computer.program[0] == target {
                 print("Part 2: \(100 * noun + verb)")
                 return
             }
