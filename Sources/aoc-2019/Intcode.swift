@@ -37,7 +37,7 @@ struct Computer {
     /// The instruction pointer.
     var iP: Int = 0
     /// Indicates whether the program has halted.
-    var halted = false
+    var isHalted = false
 
     /// Initializes a new Computer with a program to run and an optionally provided array of inputs.
     init(program: [Int], inputs: [Int] = []) {
@@ -99,7 +99,7 @@ struct Computer {
     /// Executes the next instruction in the program. Has no effect if the program has already halted or if the
     /// instruction pointer reaches the end of the program.
     mutating func step() {
-        guard !self.halted && self.iP < program.count else {
+        guard !self.isHalted && self.iP < program.count else {
             return
         }
         let instruction = self.readNextInstruction()
@@ -128,7 +128,7 @@ struct Computer {
                 return // return to avoid incrementing iP below
             }
         case .halt:
-            self.halted = true
+            self.isHalted = true
             return
         }
         self.iP += instruction.length
@@ -137,7 +137,7 @@ struct Computer {
     /// Runs the program until it next produces output or until the program halts. If an output is produced, returns
     /// the output. If the program halts, returns nil.
     mutating func runProgramUntilNextOutput() -> Int? {
-        while self.iP < self.program.count && !self.halted && self.outputs.count == 0 {
+        while self.iP < self.program.count && !self.isHalted && self.outputs.count == 0 {
             self.step()
         }
         return self.outputs.count > 0 ? self.takeOutput() : nil
@@ -146,7 +146,7 @@ struct Computer {
     /// Runs the program until it halts.
     mutating func runProgramUntilComplete() {
         // iterate through the instructions.
-        while self.iP < self.program.count && !self.halted {
+        while self.iP < self.program.count && !self.isHalted {
             self.step()
         }
     }
