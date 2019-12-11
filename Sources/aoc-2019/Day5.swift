@@ -1,5 +1,5 @@
 func day5() throws {
-    let program = try readLines(forDay: 5)[0].split(separator: ",").map { Int($0)! }
+    let program = try readIntcodeProgram(forDay: 5)
 
     // Part 1. The final output value printed is the answer.
     var computer1 = Computer(program: program, inputs: [1])

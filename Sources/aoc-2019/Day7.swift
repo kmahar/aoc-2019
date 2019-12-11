@@ -15,7 +15,7 @@ func generatePermutations(of list: [Int]) -> [[Int]] {
 }
 
 func day7() throws {
-    let data = try readLines(forDay: 7)[0].split(separator: ",").map { Int($0)! }
+    let data = try readIntcodeProgram(forDay: 7)
 
     // part 1
     let phaseCombinations = generatePermutations(of: [0, 1, 2, 3, 4])

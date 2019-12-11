@@ -1,5 +1,5 @@
 func day2() throws {
-    let program = try readLines(forDay: 2)[0].split(separator: ",").map { Int($0)! }
+    let program = try readIntcodeProgram(forDay: 2)
 
     var part1Program = program
     part1Program[1] = 12
