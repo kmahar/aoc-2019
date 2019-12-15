@@ -17,21 +17,6 @@ struct Move {
     }
 }
 
-/// A point that a wire visits.
-struct Point: Hashable {
-    let x: Int
-    let y: Int
-
-    init(_ x: Int, _ y: Int) {
-        self.x = x
-        self.y = y
-    }
-
-    var distFromOrigin: Int {
-        abs(self.x) + abs(self.y)
-    }
-}
-
 /// Given a wire's path, returns a list of all of the points the wire visited, in order. Assumes the wire started at
 /// the origin.
 func getVisitedPoints(on path: [Move]) -> [Point] {

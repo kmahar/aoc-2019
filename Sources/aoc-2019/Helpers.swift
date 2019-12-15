@@ -9,6 +9,20 @@ func readLines(forDay day: Int) throws -> [String.SubSequence] {
                 .split(separator: "\n")
 }
 
+struct Point: Hashable {
+    let x: Int
+    let y: Int
+
+    init(_ x: Int, _ y: Int) {
+        self.x = x
+        self.y = y
+    }
+
+    var distFromOrigin: Int {
+        abs(self.x) + abs(self.y)
+    }
+}
+
 let days: [Int: () throws -> Void] = [
     1: day1,
     2: day2,
