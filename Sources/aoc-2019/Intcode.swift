@@ -27,12 +27,21 @@ struct Instruction {
     var length: Int { return parameters.count + 1 }
 }
 
+/// A type that produces an endless series of inputs for an Intcode program.
+protocol InputProducer {
+    func nextValue() -> Int
+}
+
 /// An Intcode computer.
 struct Computer {
     /// The program this computer should run.
     var program: [Int]
-    /// Stores any inputs that should be provided to the program.
+    /// Stores any inputs that should be provided to the program. If provided, the computer will use up these inputs
+    /// before using the input provider.
     var inputs: [Int]
+    /// An optional input producer this program should use for getting inputs. This producer will only be used when the
+    /// provided inputs array is empty.
+    let inputProducer: InputProducer?
     /// Stores outputs that the program produces while running.
     var outputs: [Int] = []
     /// The instruction pointer.
@@ -43,9 +52,10 @@ struct Computer {
     var isHalted = false
 
     /// Initializes a new Computer with a program to run and an optionally provided array of inputs.
-    init(program: [Int], inputs: [Int] = []) {
+    init(program: [Int], inputs: [Int] = [], inputProducer: InputProducer? = nil) {
         self.program = program
         self.inputs = inputs
+        self.inputProducer = inputProducer
     }
 
     /// Takes an output of the program in FIFO order. Assumes an output is available.
@@ -117,7 +127,13 @@ struct Computer {
         case .lessThan:
             self.program[params[2]] = self.program[params[0]] < self.program[params[1]] ? 1 : 0
         case .input:
-            self.program[params[0]] = self.inputs.removeFirst()
+            if self.inputs.count > 0 {
+                self.program[params[0]] = self.inputs.removeFirst()
+            } else if let producer = self.inputProducer {
+                self.program[params[0]] = producer.nextValue()
+            } else {
+                fatalError("no way to get more input")
+            }
         case .output:
             self.outputs.append(self.program[params[0]])
         case .jumpIfTrue:
